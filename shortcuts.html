@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>My Shortcuts</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  :root{
+    --bg:#0d0d0f;--surface:#16161a;--card:#1c1c22;--card-hover:#23232c;
+    --border:#2a2a35;--accent:#c8f464;--accent2:#6e6aff;--text:#e8e8f0;
+    --muted:#6b6b80;--danger:#ff5c5c;
+  }
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0 0 80px;}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:22px 28px 0;flex-wrap:wrap;gap:12px;}
+  .topbar h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(1.5rem,4vw,2.2rem);letter-spacing:-0.04em;background:linear-gradient(120deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+  .lang-select{background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.82rem;padding:7px 12px;cursor:pointer;outline:none;transition:border-color .2s;}
+  .lang-select:focus{border-color:var(--accent2);}
+
+  .btn-folder{background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:'Syne',sans-serif;font-size:.8rem;font-weight:600;padding:7px 14px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:6px;}
+  .btn-folder:hover{border-color:var(--accent);color:var(--accent);}
+
+  main{padding:28px 24px 0;max-width:960px;margin:0 auto;}
+
+  .folder-section{margin-bottom:36px;animation:fadeDown .4s ease both;}
+  .folder-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer;user-select:none;padding:6px 0;}
+  .folder-icon{font-size:1.1rem;}
+  .folder-name{font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;letter-spacing:-0.01em;}
+  .folder-toggle{font-size:.75rem;color:var(--muted);margin-left:auto;transition:transform .25s;}
+  .folder-toggle.collapsed{transform:rotate(-90deg);}
+  .folder-actions{display:flex;gap:4px;opacity:0;transition:opacity .2s;}
+  .folder-header:hover .folder-actions{opacity:1;}
+  .folder-action-btn{background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer;padding:3px 7px;border-radius:7px;transition:color .2s,background .2s;}
+  .folder-action-btn:hover{color:var(--text);background:var(--card);}
+  .folder-action-btn.del:hover{color:var(--danger);}
+
+  .folder-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;}
+  .folder-grid.hidden{display:none;}
+
+  .shortcut-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 12px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;text-decoration:none;color:var(--text);position:relative;transition:transform .2s,background .2s,box-shadow .2s,border-color .2s;animation:popIn .3s ease both;}
+  .shortcut-card:hover{background:var(--card-hover);transform:translateY(-4px) scale(1.02);box-shadow:0 12px 40px rgba(110,106,255,.15);border-color:var(--accent2);}
+  .favicon-wrap{width:48px;height:48px;border-radius:13px;background:linear-gradient(135deg,#232332,#1a1a28);display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid var(--border);flex-shrink:0;}
+  .favicon-wrap img{width:26px;height:26px;object-fit:contain;}
+  .fallback-letter{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+  .shortcut-name{font-size:.78rem;font-weight:500;text-align:center;word-break:break-word;line-height:1.3;}
+  .delete-btn{position:absolute;top:7px;right:7px;width:20px;height:20px;background:rgba(255,92,92,.15);border:1px solid rgba(255,92,92,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;cursor:pointer;color:var(--danger);font-size:.65rem;font-weight:700;}
+  .shortcut-card:hover .delete-btn{opacity:1;}
+  .delete-btn:hover{background:rgba(255,92,92,.35);border-color:var(--danger);}
+
+  .add-card{background:transparent;border:2px dashed var(--border);border-radius:16px;padding:20px 12px 16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;min-height:110px;transition:border-color .2s,background .2s,transform .2s;color:var(--muted);}
+  .add-card:hover{border-color:var(--accent);background:rgba(200,244,100,.04);transform:translateY(-4px) scale(1.02);color:var(--accent);}
+  .add-icon{width:40px;height:40px;border-radius:50%;background:rgba(200,244,100,.08);border:1.5px solid rgba(200,244,100,.25);display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:300;transition:background .2s,border-color .2s;}
+  .add-card:hover .add-icon{background:rgba(200,244,100,.18);border-color:var(--accent);}
+  .add-label{font-size:.75rem;font-weight:500;letter-spacing:.05em;text-transform:uppercase;}
+
+  footer{text-align:center;padding:48px 0 20px;color:var(--muted);font-size:.78rem;letter-spacing:.06em;}
+  footer span{color:var(--accent2);font-family:'Syne',sans-serif;font-weight:700;}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:200;animation:fadeIn .2s ease;padding:20px;}
+  .modal-backdrop.hidden{display:none;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:22px;padding:28px 26px;width:100%;max-width:400px;animation:slideUp .25s ease;box-shadow:0 40px 100px rgba(0,0,0,.6);}
+  .modal h2{font-family:'Syne',sans-serif;font-weight:700;font-size:1.3rem;margin-bottom:22px;letter-spacing:-0.02em;}
+  .field{margin-bottom:16px;}
+  .field label{display:block;font-size:.75rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;}
+  .field input,.field select{width:100%;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s,box-shadow .2s;}
+  .field select option{background:var(--surface);}
+  .field input:focus,.field select:focus{border-color:var(--accent2);box-shadow:0 0 0 3px rgba(110,106,255,.15);}
+  .modal-actions{display:flex;gap:10px;margin-top:22px;}
+  .btn{flex:1;padding:11px;border-radius:11px;font-family:'Syne',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer;border:none;transition:opacity .2s,transform .15s;}
+  .btn:active{transform:scale(.97);}
+  .btn-cancel{background:var(--card);color:var(--muted);border:1px solid var(--border);}
+  .btn-cancel:hover{color:var(--text);}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),#a8e000);color:#0d0d0f;}
+  .btn-primary:hover{opacity:.88;}
+
+  @keyframes fadeDown{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes popIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+  [dir="rtl"] .folder-toggle{margin-right:auto;margin-left:0;}
+  [dir="rtl"] .folder-actions{margin-left:0;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1 id="app-title">My Shortcuts</h1>
+  <div class="topbar-right">
+    <select class="lang-select" id="lang-select" onchange="setLang(this.value)">
+      <option value="en">🌐 English</option>
+      <option value="ar">🇸🇦 العربية</option>
+      <option value="fr">🇫🇷 Français</option>
+      <option value="es">🇪🇸 Español</option>
+      <option value="de">🇩🇪 Deutsch</option>
+      <option value="it">🇮🇹 Italiano</option>
+      <option value="pt">🇧🇷 Português</option>
+      <option value="ru">🇷🇺 Русский</option>
+      <option value="zh">🇨🇳 中文</option>
+      <option value="ja">🇯🇵 日本語</option>
+      <option value="ko">🇰🇷 한국어</option>
+      <option value="tr">🇹🇷 Türkçe</option>
+      <option value="nl">🇳🇱 Nederlands</option>
+      <option value="pl">🇵🇱 Polski</option>
+      <option value="hi">🇮🇳 हिन्दी</option>
+    </select>
+    <button class="btn-folder" id="btn-add-folder" onclick="openFolderModal()">📁 <span id="lbl-new-folder">New Folder</span></button>
+  </div>
+</div>
+
+<main id="main"></main>
+
+<footer id="footer">© 2026 — Made with ♥ by <span>Zouhirad</span></footer>
+
+<!-- ADD SHORTCUT MODAL -->
+<div class="modal-backdrop hidden" id="modal-shortcut">
+  <div class="modal">
+    <h2 id="modal-shortcut-title">Add Shortcut</h2>
+    <div class="field"><label id="lbl-name">Name</label><input id="inp-name" type="text" maxlength="32" placeholder="e.g. YouTube"/></div>
+    <div class="field"><label id="lbl-url">URL</label><input id="inp-url" type="url" placeholder="https://youtube.com"/></div>
+    <div class="field"><label id="lbl-folder-sel">Folder</label><select id="inp-folder"></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" id="lbl-cancel" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary" id="lbl-add" onclick="addShortcut()">Add</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD FOLDER MODAL -->
+<div class="modal-backdrop hidden" id="modal-folder">
+  <div class="modal">
+    <h2 id="modal-folder-title">New Folder</h2>
+    <div class="field"><label id="lbl-folder-name">Folder Name</label><input id="inp-folder-name" type="text" maxlength="32"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" id="lbl-cancel2" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary" id="lbl-create" onclick="addFolder()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- RENAME FOLDER MODAL -->
+<div class="modal-backdrop hidden" id="modal-rename">
+  <div class="modal">
+    <h2 id="modal-rename-title">Rename Folder</h2>
+    <div class="field"><label id="lbl-rename-label">New Name</label><input id="inp-rename" type="text" maxlength="32"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" id="lbl-cancel3" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary" id="lbl-rename-btn" onclick="confirmRename()">Rename</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LANGS = {
+  en:{dir:'ltr',appTitle:'My Shortcuts',newFolder:'New Folder',addShortcut:'Add Shortcut',name:'Name',url:'URL',folderSel:'Folder',cancel:'Cancel',add:'Add',folderName:'Folder Name',create:'Create',newFolderTitle:'New Folder',renameFolderTitle:'Rename Folder',newName:'New Name',rename:'Rename',addSite:'Add Site',hide:'Hide',show:'Show',deleteFolder:'Delete',namePh:'e.g. YouTube',urlPh:'https://youtube.com'},
+  ar:{dir:'rtl',appTitle:'اختصاراتي',newFolder:'مجلد جديد',addShortcut:'إضافة اختصار',name:'الاسم',url:'الرابط',folderSel:'المجلد',cancel:'إلغاء',add:'إضافة',folderName:'اسم المجلد',create:'إنشاء',newFolderTitle:'مجلد جديد',renameFolderTitle:'إعادة تسمية',newName:'اسم جديد',rename:'تسمية',addSite:'إضافة موقع',hide:'إخفاء',show:'إظهار',deleteFolder:'حذف',namePh:'مثال: يوتيوب',urlPh:'https://youtube.com'},
+  fr:{dir:'ltr',appTitle:'Mes Raccourcis',newFolder:'Nouveau Dossier',addShortcut:'Ajouter un raccourci',name:'Nom',url:'URL',folderSel:'Dossier',cancel:'Annuler',add:'Ajouter',folderName:'Nom du dossier',create:'Créer',newFolderTitle:'Nouveau Dossier',renameFolderTitle:'Renommer',newName:'Nouveau nom',rename:'Renommer',addSite:'Ajouter un site',hide:'Masquer',show:'Afficher',deleteFolder:'Supprimer',namePh:'ex. YouTube',urlPh:'https://youtube.com'},
+  es:{dir:'ltr',appTitle:'Mis Accesos Directos',newFolder:'Nueva Carpeta',addShortcut:'Añadir acceso',name:'Nombre',url:'URL',folderSel:'Carpeta',cancel:'Cancelar',add:'Añadir',folderName:'Nombre de carpeta',create:'Crear',newFolderTitle:'Nueva Carpeta',renameFolderTitle:'Renombrar',newName:'Nuevo nombre',rename:'Renombrar',addSite:'Añadir sitio',hide:'Ocultar',show:'Mostrar',deleteFolder:'Eliminar',namePh:'ej. YouTube',urlPh:'https://youtube.com'},
+  de:{dir:'ltr',appTitle:'Meine Verknüpfungen',newFolder:'Neuer Ordner',addShortcut:'Verknüpfung hinzufügen',name:'Name',url:'URL',folderSel:'Ordner',cancel:'Abbrechen',add:'Hinzufügen',folderName:'Ordnername',create:'Erstellen',newFolderTitle:'Neuer Ordner',renameFolderTitle:'Umbenennen',newName:'Neuer Name',rename:'Umbenennen',addSite:'Website hinzufügen',hide:'Ausblenden',show:'Einblenden',deleteFolder:'Löschen',namePh:'z.B. YouTube',urlPh:'https://youtube.com'},
+  it:{dir:'ltr',appTitle:'I Miei Preferiti',newFolder:'Nuova Cartella',addShortcut:'Aggiungi collegamento',name:'Nome',url:'URL',folderSel:'Cartella',cancel:'Annulla',add:'Aggiungi',folderName:'Nome cartella',create:'Crea',newFolderTitle:'Nuova Cartella',renameFolderTitle:'Rinomina',newName:'Nuovo nome',rename:'Rinomina',addSite:'Aggiungi sito',hide:'Nascondi',show:'Mostra',deleteFolder:'Elimina',namePh:'es. YouTube',urlPh:'https://youtube.com'},
+  pt:{dir:'ltr',appTitle:'Meus Atalhos',newFolder:'Nova Pasta',addShortcut:'Adicionar atalho',name:'Nome',url:'URL',folderSel:'Pasta',cancel:'Cancelar',add:'Adicionar',folderName:'Nome da pasta',create:'Criar',newFolderTitle:'Nova Pasta',renameFolderTitle:'Renomear',newName:'Novo nome',rename:'Renomear',addSite:'Adicionar site',hide:'Ocultar',show:'Mostrar',deleteFolder:'Excluir',namePh:'ex. YouTube',urlPh:'https://youtube.com'},
+  ru:{dir:'ltr',appTitle:'Мои Ярлыки',newFolder:'Новая папка',addShortcut:'Добавить ярлык',name:'Название',url:'URL',folderSel:'Папка',cancel:'Отмена',add:'Добавить',folderName:'Название папки',create:'Создать',newFolderTitle:'Новая папка',renameFolderTitle:'Переименовать',newName:'Новое название',rename:'Переименовать',addSite:'Добавить сайт',hide:'Скрыть',show:'Показать',deleteFolder:'Удалить',namePh:'напр. YouTube',urlPh:'https://youtube.com'},
+  zh:{dir:'ltr',appTitle:'我的快捷方式',newFolder:'新建文件夹',addShortcut:'添加快捷方式',name:'名称',url:'网址',folderSel:'文件夹',cancel:'取消',add:'添加',folderName:'文件夹名称',create:'创建',newFolderTitle:'新建文件夹',renameFolderTitle:'重命名',newName:'新名称',rename:'重命名',addSite:'添加网站',hide:'隐藏',show:'显示',deleteFolder:'删除',namePh:'例如：YouTube',urlPh:'https://youtube.com'},
+  ja:{dir:'ltr',appTitle:'マイショートカット',newFolder:'新しいフォルダ',addShortcut:'ショートカットを追加',name:'名前',url:'URL',folderSel:'フォルダ',cancel:'キャンセル',add:'追加',folderName:'フォルダ名',create:'作成',newFolderTitle:'新しいフォルダ',renameFolderTitle:'名前を変更',newName:'新しい名前',rename:'名前を変更',addSite:'サイトを追加',hide:'非表示',show:'表示',deleteFolder:'削除',namePh:'例：YouTube',urlPh:'https://youtube.com'},
+  ko:{dir:'ltr',appTitle:'내 바로가기',newFolder:'새 폴더',addShortcut:'바로가기 추가',name:'이름',url:'URL',folderSel:'폴더',cancel:'취소',add:'추가',folderName:'폴더 이름',create:'만들기',newFolderTitle:'새 폴더',renameFolderTitle:'이름 바꾸기',newName:'새 이름',rename:'이름 바꾸기',addSite:'사이트 추가',hide:'숨기기',show:'보기',deleteFolder:'삭제',namePh:'예: YouTube',urlPh:'https://youtube.com'},
+  tr:{dir:'ltr',appTitle:'Kısayollarım',newFolder:'Yeni Klasör',addShortcut:'Kısayol ekle',name:'Ad',url:'URL',folderSel:'Klasör',cancel:'İptal',add:'Ekle',folderName:'Klasör adı',create:'Oluştur',newFolderTitle:'Yeni Klasör',renameFolderTitle:'Yeniden adlandır',newName:'Yeni ad',rename:'Yeniden adlandır',addSite:'Site ekle',hide:'Gizle',show:'Göster',deleteFolder:'Sil',namePh:'örn. YouTube',urlPh:'https://youtube.com'},
+  nl:{dir:'ltr',appTitle:'Mijn Snelkoppelingen',newFolder:'Nieuwe Map',addShortcut:'Snelkoppeling toevoegen',name:'Naam',url:'URL',folderSel:'Map',cancel:'Annuleren',add:'Toevoegen',folderName:'Mapnaam',create:'Aanmaken',newFolderTitle:'Nieuwe Map',renameFolderTitle:'Hernoemen',newName:'Nieuwe naam',rename:'Hernoemen',addSite:'Site toevoegen',hide:'Verbergen',show:'Tonen',deleteFolder:'Verwijderen',namePh:'bijv. YouTube',urlPh:'https://youtube.com'},
+  pl:{dir:'ltr',appTitle:'Moje Skróty',newFolder:'Nowy Folder',addShortcut:'Dodaj skrót',name:'Nazwa',url:'URL',folderSel:'Folder',cancel:'Anuluj',add:'Dodaj',folderName:'Nazwa folderu',create:'Utwórz',newFolderTitle:'Nowy Folder',renameFolderTitle:'Zmień nazwę',newName:'Nowa nazwa',rename:'Zmień nazwę',addSite:'Dodaj stronę',hide:'Ukryj',show:'Pokaż',deleteFolder:'Usuń',namePh:'np. YouTube',urlPh:'https://youtube.com'},
+  hi:{dir:'ltr',appTitle:'मेरे शॉर्टकट',newFolder:'नया फ़ोल्डर',addShortcut:'शॉर्टकट जोड़ें',name:'नाम',url:'URL',folderSel:'फ़ोल्डर',cancel:'रद्द करें',add:'जोड़ें',folderName:'फ़ोल्डर का नाम',create:'बनाएं',newFolderTitle:'नया फ़ोल्डर',renameFolderTitle:'नाम बदलें',newName:'नया नाम',rename:'नाम बदलें',addSite:'साइट जोड़ें',hide:'छुपाएं',show:'दिखाएं',deleteFolder:'हटाएं',namePh:'जैसे: YouTube',urlPh:'https://youtube.com'},
+};
+
+const SK = 'shortcuts_v3';
+let state = JSON.parse(localStorage.getItem(SK) || 'null') || {
+  lang:'en',
+  folders:[{id:'default',name:'General',hidden:false,shortcuts:[]}]
+};
+let currentFolderId = null;
+let renameFolderId = null;
+
+function save(){ localStorage.setItem(SK, JSON.stringify(state)); }
+function t(){ return LANGS[state.lang] || LANGS.en; }
+
+function setLang(lang){ state.lang = lang; save(); applyLang(); render(); }
+
+function applyLang(){
+  const l = t();
+  document.documentElement.lang = state.lang;
+  document.documentElement.dir = l.dir;
+  document.getElementById('app-title').textContent = l.appTitle;
+  document.getElementById('lbl-new-folder').textContent = l.newFolder;
+  document.getElementById('modal-shortcut-title').textContent = l.addShortcut;
+  document.getElementById('lbl-name').textContent = l.name;
+  document.getElementById('lbl-url').textContent = l.url;
+  document.getElementById('lbl-folder-sel').textContent = l.folderSel;
+  document.getElementById('lbl-cancel').textContent = l.cancel;
+  document.getElementById('lbl-add').textContent = l.add;
+  document.getElementById('modal-folder-title').textContent = l.newFolderTitle;
+  document.getElementById('lbl-folder-name').textContent = l.folderName;
+  document.getElementById('lbl-cancel2').textContent = l.cancel;
+  document.getElementById('lbl-create').textContent = l.create;
+  document.getElementById('modal-rename-title').textContent = l.renameFolderTitle;
+  document.getElementById('lbl-rename-label').textContent = l.newName;
+  document.getElementById('lbl-cancel3').textContent = l.cancel;
+  document.getElementById('lbl-rename-btn').textContent = l.rename;
+  document.getElementById('inp-name').placeholder = l.namePh;
+  document.getElementById('inp-url').placeholder = l.urlPh;
+  document.getElementById('lang-select').value = state.lang;
+}
+
+function render(){
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+  const l = t();
+
+  state.folders.forEach(folder => {
+    const section = document.createElement('div');
+    section.className = 'folder-section';
+
+    const header = document.createElement('div');
+    header.className = 'folder-header';
+    header.innerHTML = `
+      <span class="folder-icon">${folder.hidden ? '📂' : '📁'}</span>
+      <span class="folder-name">${folder.name}</span>
+      <div class="folder-actions">
+        <button class="folder-action-btn" title="${l.rename}" onclick="event.stopPropagation();openRenameModal('${folder.id}')">✏️</button>
+        <button class="folder-action-btn" title="${folder.hidden ? l.show : l.hide}" onclick="event.stopPropagation();toggleFolder('${folder.id}')">${folder.hidden ? '👁️' : '🙈'}</button>
+        <button class="folder-action-btn del" title="${l.deleteFolder}" onclick="event.stopPropagation();deleteFolder('${folder.id}')">🗑️</button>
+      </div>
+      <span class="folder-toggle ${folder.hidden ? 'collapsed' : ''}">▼</span>
+    `;
+    header.addEventListener('click', () => toggleFolder(folder.id));
+    section.appendChild(header);
+
+    const grid = document.createElement('div');
+    grid.className = 'folder-grid' + (folder.hidden ? ' hidden' : '');
+
+    folder.shortcuts.forEach((s, i) => {
+      const a = document.createElement('a');
+      a.className = 'shortcut-card';
+      a.href = s.url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.style.animationDelay = (i * 0.04) + 's';
+
+      const fw = document.createElement('div');
+      fw.className = 'favicon-wrap';
+      try {
+        const host = new URL(s.url).hostname;
+        const img = document.createElement('img');
+        img.src = `https://www.google.com/s2/favicons?domain=${host}&sz=64`;
+        img.alt = s.name;
+        img.onerror = () => { img.remove(); addFallback(fw, s.name); };
+        fw.appendChild(img);
+      } catch { addFallback(fw, s.name); }
+
+      const nameEl = document.createElement('span');
+      nameEl.className = 'shortcut-name';
+      nameEl.textContent = s.name;
+
+      const del = document.createElement('button');
+      del.className = 'delete-btn';
+      del.innerHTML = '✕';
+      del.addEventListener('click', e => {
+        e.preventDefault(); e.stopPropagation();
+        folder.shortcuts.splice(i, 1);
+        save(); render();
+      });
+
+      a.appendChild(fw); a.appendChild(nameEl); a.appendChild(del);
+      grid.appendChild(a);
+    });
+
+    const addCard = document.createElement('div');
+    addCard.className = 'add-card';
+    addCard.innerHTML = `<div class="add-icon">+</div><span class="add-label">${l.addSite}</span>`;
+    addCard.addEventListener('click', () => openShortcutModal(folder.id));
+    grid.appendChild(addCard);
+
+    section.appendChild(grid);
+    main.appendChild(section);
+  });
+}
+
+function addFallback(wrap, name){
+  const span = document.createElement('span');
+  span.className = 'fallback-letter';
+  span.textContent = name.charAt(0).toUpperCase();
+  wrap.appendChild(span);
+}
+
+function toggleFolder(id){
+  const f = state.folders.find(f => f.id === id);
+  if(f){ f.hidden = !f.hidden; save(); render(); }
+}
+
+function deleteFolder(id){
+  if(state.folders.length === 1){ alert('You need at least one folder!'); return; }
+  if(!confirm('Delete this folder and all its shortcuts?')) return;
+  state.folders = state.folders.filter(f => f.id !== id);
+  save(); render();
+}
+
+function openFolderModal(){
+  document.getElementById('inp-folder-name').value = '';
+  document.getElementById('modal-folder').classList.remove('hidden');
+  setTimeout(() => document.getElementById('inp-folder-name').focus(), 50);
+}
+
+function addFolder(){
+  const name = document.getElementById('inp-folder-name').value.trim();
+  if(!name) return;
+  state.folders.push({id:'f_'+Date.now(), name, hidden:false, shortcuts:[]});
+  save(); render(); closeModals();
+}
+
+function openRenameModal(id){
+  renameFolderId = id;
+  const f = state.folders.find(f => f.id === id);
+  document.getElementById('inp-rename').value = f ? f.name : '';
+  document.getElementById('modal-rename').classList.remove('hidden');
+  setTimeout(() => document.getElementById('inp-rename').focus(), 50);
+}
+
+function confirmRename(){
+  const name = document.getElementById('inp-rename').value.trim();
+  if(!name) return;
+  const f = state.folders.find(f => f.id === renameFolderId);
+  if(f){ f.name = name; save(); render(); closeModals(); }
+}
+
+function openShortcutModal(folderId){
+  currentFolderId = folderId;
+  document.getElementById('inp-name').value = '';
+  document.getElementById('inp-url').value = '';
+  const sel = document.getElementById('inp-folder');
+  sel.innerHTML = '';
+  state.folders.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f.id; opt.textContent = f.name;
+    if(f.id === folderId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  document.getElementById('modal-shortcut').classList.remove('hidden');
+  setTimeout(() => document.getElementById('inp-name').focus(), 50);
+}
+
+function addShortcut(){
+  const name = document.getElementById('inp-name').value.trim();
+  let url = document.getElementById('inp-url').value.trim();
+  const folderId = document.getElementById('inp-folder').value;
+  if(!name || !url) return;
+  if(!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  const folder = state.folders.find(f => f.id === folderId);
+  if(folder){ folder.shortcuts.push({name, url}); save(); render(); closeModals(); }
+}
+
+function closeModals(){
+  document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.add('hidden'));
+}
+
+document.querySelectorAll('.modal-backdrop').forEach(m => {
+  m.addEventListener('click', e => { if(e.target === m) closeModals(); });
+});
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeModals();
+});
+
+applyLang();
+render();
+</script>
+</body>
+</html>
